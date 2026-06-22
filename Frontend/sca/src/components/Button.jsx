@@ -1,7 +1,6 @@
 import React, { useRef } from 'react'
 
 const Button = ({ setSelectedFile }) => {
-  //ref var
   const fileInputRef = useRef(null)
 
   const handleButtonClick = (e) => {

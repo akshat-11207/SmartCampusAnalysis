@@ -5,7 +5,6 @@ import Navbar from './components/Navbar'
 import Result from './components/Result'
 
 const App = () => {
-  // we will usee state variables to store image and result
   const [selectedFile, setSelectedFile] = useState(null)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
