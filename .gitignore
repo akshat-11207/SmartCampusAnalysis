@@ -1,0 +1,13 @@
+Backend/.venv/
+Backend/__pycache__/
+*.pyc
+
+Backend/uploads/
+Backend/results/
+
+Frontend/node_modules/
+Frontend/dist/
+
+.vscode/
+.DS_Store
+Thumbs.db

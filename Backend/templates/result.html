@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vehicle Count Result</title>
+</head>
+<body>
+    <h1>Vehicle Count Result</h1>
+
+    <img src="{{ url_for('static', filename='uploads/' + image_file) }}" 
+         alt="Uploaded Image" width="500">
+
+    <h2>Total Vehicles: {{ total_vehicles }}</h2>
+
+    <h3>Class-wise Count:</h3>
+    <ul>
+        {% for vehicle, count in class_wise_count.items() %}
+            <li>{{ vehicle }} : {{ count }}</li>
+        {% endfor %}
+    </ul>
+
+    <br>
+    <a href="/">Upload Another Image</a>
+</body>
+</html>
