@@ -1,12 +1,15 @@
-from flask import Flask,request,jsonify,send_from_directory
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from ultralytics import YOLO
 import cv2
 import os
 from werkzeug.utils import secure_filename
+import math
 
 app = Flask(__name__)
 CORS(app)
+
+BUS_CAPACITY = 40
 
 UPLOAD_FOLDER = "uploads"
 RESULT_FOLDER = "results"
@@ -17,9 +20,12 @@ os.makedirs(RESULT_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["RESULT_FOLDER"] = RESULT_FOLDER
 
-model = YOLO("yolov8n.pt")
+model=YOLO("yolov8n.pt")
 
-vehicle_classes = {"car", "bus", "truck", "motorcycle", "bicycle"}
+V_CLASSES={"person", "car", "bicycle", "motorcycle"}
+
+#capacity of vehicles
+CAP={"person": 1,"car": 3, "motorcycle": 2, "bicycle": 1}
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -35,16 +41,15 @@ def predict():
     image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
     file.save(image_path)
 
-    img = cv2.imread(image_path)
+    img=cv2.imread(image_path)
     if img is None:
         return jsonify({"error": "Could not read image"}), 400
 
-    results = model(img)
+    results=model(img) #model run kia yhapr
 
-    total_vehicles = 0
-    class_wise_count = {}
+    ct= {"person": 0, "car": 0, "motorcycle": 0, "bicycle": 0 }
 
-    annotated_img = img.copy()
+    annotated_img= img.copy()
 
     for result in results:
         names = result.names
@@ -54,12 +59,11 @@ def predict():
             cls_name = names[cls_id]
             conf = float(box.conf[0].item())
 
-            if conf < 0.30:
+            if conf<0.30:
                 continue
 
-            if cls_name in vehicle_classes:
-                total_vehicles += 1
-                class_wise_count[cls_name] = class_wise_count.get(cls_name, 0) + 1
+            if cls_name in V_CLASSES:
+                ct[cls_name]+= 1
 
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
 
@@ -74,13 +78,28 @@ def predict():
                     (0, 255, 0),
                     2
                 )
+
+    est= (ct["person"]*CAP["person"]+ct["car"]*CAP["car"]+ct["motorcycle"]*CAP["motorcycle"]+ct["bicycle"]*CAP["bicycle"])
+
+    buses_required= math.ceil(est/BUS_CAPACITY) if est>0 else 0
+
     cv2.putText(
         annotated_img,
-        f"Total Vehicles: {total_vehicles}",
+        f"Estimated People: {est}",
         (20, 40),
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
         (0, 0, 255),
+        3
+    )
+
+    cv2.putText(
+        annotated_img,
+        f"Buses Required: {buses_required}",
+        (20, 80),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (255, 0, 0),
         3
     )
 
@@ -89,8 +108,10 @@ def predict():
     cv2.imwrite(result_path, annotated_img)
 
     return jsonify({
-        "total_vehicles": total_vehicles,
-        "class_wise_count": class_wise_count,
+        "class_wise_count": ct,
+        "estimated_people": est,
+        "bus_capacity": BUS_CAPACITY,
+        "buses_required": buses_required,
         "image_url": f"http://127.0.0.1:5000/results/{result_filename}"
     })
 
