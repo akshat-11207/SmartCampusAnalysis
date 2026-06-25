@@ -16,9 +16,12 @@ const Result = ({ result, handleClear }) => {
 
         <div className="flex flex-col gap-6">
           <div className="bg-amber-900 shadow-black text-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-2xl font-semibold mb-2">Total Vehicles-</h3>
-            <p className="text-5xl font-bold">{result.total_vehicles}</p>
-          </div>
+          <h3 className="text-3xl font-semibold mb-2">Estimated People- {result.estimated_people}</h3>
+        </div>
+
+        <div className="bg-amber-900 shadow-black text-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-3xl font-semibold mb-2">Buses Required- {result.buses_required}</h3>
+        </div>
 
           <div className="bg-amber-900 shadow-black rounded-2xl p-6 shadow-lg border">
             <h3 className="text-2xl text-white font-semibold mb-4">Class-wise Count-</h3>
